@@ -2,6 +2,7 @@ from typing import Dict, Tuple
 
 import aiohttp
 import voluptuous as vol
+import asyncio
 
 from solax import utils
 from solax.inverter_http_client import InverterHttpClient, Method
@@ -59,7 +60,7 @@ class Inverter:
     async def get_data(self) -> InverterResponse:
         try:
             data = await self.make_request()
-        except aiohttp.ClientError as ex:
+        except (aiohttp.ClientError, asyncio.TimeoutError) as ex:
             msg = "Could not connect to inverter endpoint"
             raise InverterError(msg, str(self.__class__.__name__)) from ex
         except vol.Invalid as ex:

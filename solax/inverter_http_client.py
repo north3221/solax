@@ -9,7 +9,7 @@ class Method(Enum):
 
 
 class InverterHttpClient:
-    def __init__(self, url, method: Method = Method.POST, pwd=""):
+    def __init__(self, url, method: Method = Method.POST, pwd="", timeout=5):
         """Initialize the Http client."""
         self.url = url
         self.method = method
@@ -17,6 +17,7 @@ class InverterHttpClient:
         self.headers = None
         self.data = None
         self.query = ""
+        self.timeout = aiohttp.ClientTimeout(total=timeout)
 
     @classmethod
     def build_w_url(cls, url, method: Method = Method.POST):
@@ -58,7 +59,7 @@ class InverterHttpClient:
     async def get(self):
         url = self.url + "?" + self.query if self.query else self.url
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, headers=self.headers) as req:
+            async with session.get(url, headers=self.headers, timeout=self.timeout) as req:
                 req.raise_for_status()
                 resp = await req.read()
         return resp
@@ -67,7 +68,7 @@ class InverterHttpClient:
         url = self.url + "?" + self.query if self.query else self.url
         data = self.data.encode("utf-8") if self.data else None
         async with aiohttp.ClientSession() as session:
-            async with session.post(url, headers=self.headers, data=data) as req:
+            async with session.post(url, headers=self.headers, data=data, timeout=self.timeout) as req:
                 req.raise_for_status()
                 resp = await req.read()
         return resp
